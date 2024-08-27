@@ -2,7 +2,7 @@ import { useAccount } from "wagmi";
 import { useState, useEffect } from 'react'
 import "./Home.css";
 import NotConnected from "./components/blockchain/NotConnected";
-import { Modal, Box, Button, Text, TextInput, Tabs } from "@0xsequence/design-system";
+import {Button, Text} from "@0xsequence/design-system";
 import Connected from "./components/blockchain/Connected";
 import MarketplaceWidget from './components/MarketplaceWidget'
 
@@ -12,8 +12,6 @@ const Home = () => {
   const { isConnected } = useAccount();
 
   useEffect(() => {
-    console.log(isOpen)
-    console.log('isOpen')
   }, [isOpen])
 
   return (

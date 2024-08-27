@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import { Modal, Box, Button, Text, TextInput, Tabs, Card } from "@0xsequence/design-system";
+import { Modal, Box, Button, TextInput, Tabs, Card } from "@0xsequence/design-system";
 import Collectible from "./Collectible";
 import { AnimatePresence } from "framer-motion";
 import { useAccount, useSendTransaction } from 'wagmi';

@@ -1,9 +1,5 @@
 import {
-  mainnet,
-  polygon,
   Chain,
-  polygonAmoy,
-  arbitrumSepolia,
   arbitrum
 } from "wagmi/chains";
 
