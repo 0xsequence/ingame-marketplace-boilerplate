@@ -16,7 +16,7 @@ const ChainInfo = (props: { chain: Chain; address: Address }) => {
         alignItems="flex-end"
       >
         <ActiveNetwork chain={chain} />
-        <SwitchNetwork chain={chain} />
+        {/* <SwitchNetwork chain={chain} /> */}
       </Box>
       <NativeBalance chain={chain} address={address} />
     </Box>

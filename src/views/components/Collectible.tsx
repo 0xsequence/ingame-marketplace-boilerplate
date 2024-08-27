@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Collectible.css"; // Create this CSS file for styles
-
-import { Modal, Box, Button, Text, TextInput, Tabs } from'@0xsequence/design-system'
-import { AnimatePresence } from "framer-motion";
-import SequenceMarketABI from '../../abi/ISequenceMarketplace.json'
-import {
-  useCheckoutModal,
-  useCheckoutWhitelistStatus,
-} from '@0xsequence/kit-checkout';
-
-import {ethers} from 'ethers'
-
+import { SequenceIndexer } from '@0xsequence/indexer'
 
 const ImageWindow = (props: any) => {
   const [urlImage, setUrlImage] = useState<string | null>(null);
@@ -53,90 +43,84 @@ const ImageWindow = (props: any) => {
 
 const ImageCard = (props: any) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isOpen, toggleModal] = useState(false);
-  const { triggerCheckout } = useCheckoutModal();
+  const [isOpen, _] = useState(false);
   const [inProgress, setInProgress] = useState(false)
   const [tokenID, setTokenID] = useState<any>('...')
   const [name, setName] = useState<any>('...')
   const [supply, setSupply] = useState<any>('...')
   const [maxSupply, setMaxSupply] = useState<any>('...')
+  const [insufficentPayment, setInsufficentPayment] = useState<any>(false)
+  const [decimals, setDecimals] = useState<any>(0)
+  const [paymentTokenName, setPaymentTokenName] = useState<any>('')
+
   React.useEffect(() => {
 
   }, [isOpen])
 
-  const SEQUENCE_MARKET_V1_ADDRESS =
-  '0xB537a160472183f2150d42EB1c3DD6684A55f74c';
-
-  const isDev = true
-
-
-  const acceptRequest = () => {
-    // console.log()
-    const calldata = ''
-
-    const sequenceMarketInterface = new ethers.utils.Interface(
-      SequenceMarketABI.abi,
-    );
-    const data = sequenceMarketInterface.encodeFunctionData(
-      "acceptRequest",
-      [100, 1, '0xBAbebe9FE973a5735D486BF6D31e9a027248024e', [], []],
-    );
-
-    const checkoutSettings = {
-      creditCardCheckout: {
-        chainId: 421614,
-        contractAddress: SEQUENCE_MARKET_V1_ADDRESS,
-        recipientAddress: '0xBAbebe9FE973a5735D486BF6D31e9a027248024e'!,
-        currencyQuantity: '1',
-        currencySymbol: 'WETH',
-        currencyAddress: '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
-        currencyDecimals: '18',
-        nftId: '8' || '',
-        nftAddress: '0x9bec34c1f7098e278afd48fedcf13355b854364a' || '',
-        nftQuantity: '1',
-        nftDecimals: '2',
-        calldata: calldata,
-        approvedSpenderAddress: SEQUENCE_MARKET_V1_ADDRESS,
-        isDev,
-        onSuccess: (txnHash: any) => {
-          console.log(txnHash)
-          // onCreditCardSuccesss(txnHash).catch((e) => console.error(e));
-        },
-        onError: (error: any) => {
-          console.error(error);
-        },
-      },
-    };
-
-    triggerCheckout(checkoutSettings);
-  }
-
   React.useEffect(() => {
-    console.log(props.onUpdateCount)
-    if(tokenID){
+    console.log(props.minterURL)
+    if(tokenID!='...'){
       setTimeout(async () => {
-        const res = await fetch(`http://localhost:8787/maxSupply/${tokenID}`)
-        // console.log(res)
-        const data = await res.json()
-        // console.log(data)
-        setMaxSupply(data.supply)
+        try {
+          const res = await fetch(`${props.minterURL}maxSupply/${tokenID}`)
+          if(res.status == 200){
+
+          const data = await res.json()
+          setMaxSupply(data.supply)
+        }
+        }catch(err){
+          console.log(err)
+        }
       }, 0)
     }
 
-    if(tokenID){
+    if(tokenID!='...'){
       setTimeout(async () => {
-        const res = await fetch(`http://localhost:8787/supply/${tokenID}`)
-        // console.log(res)
-        const data = await res.json()
-        // console.log(data)
-        setSupply(data.supply)
+        try {
+          const res = await fetch(`${props.minterURL}supply/${tokenID}`)
+          if(res.status == 200){
+
+          const data = await res.json()
+          setSupply(data.supply)
+        }
+        }catch(err){
+          console.log(err)
+        }
       }, 0)
     }
   }, [inProgress, tokenID])
 
+  const getUserBalance = async () => {
+    const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, 'AQAAAAAAAF_JvPALhBthL7VGn6jV0YDqaFY')
+  
+      // try any contract and account address you'd like :)
+      const contractAddress = props.paymentToken
+      const accountAddress = props.address
+      
+      // query Sequence Indexer for all nft balances of the account on Polygon
+      const nftBalances = await indexer.getTokenBalances({
+        contractAddress: contractAddress,
+        accountAddress: accountAddress,
+        includeMetadata: true
+      })
+      
+      nftBalances.balances.map((balance: any) => {
+        if(balance.contractAddress.toLowerCase() == contractAddress.toLowerCase()){
+          setDecimals(balance.contractInfo?.decimals)
+          setPaymentTokenName(balance.contractInfo.name)
+          if((Number(balance.balance)/Number(10**Number(balance.contractInfo?.decimals)) < (Number(props.pricePerToken)/Number(10**Number(balance.contractInfo?.decimals))))){
+            setInsufficentPayment(true)
+          } 
+        }
+      })
+  }
+  useEffect(() => {
+    props.address && getUserBalance()
+  }, [])
+
   useEffect(() => {
 
-  }, [maxSupply, supply, name, props.onUpdateCount])
+  }, [maxSupply, insufficentPayment,supply, name, props.onUpdateCount])
 
   return (
     <div
@@ -147,28 +131,28 @@ const ImageCard = (props: any) => {
         <ImageWindow setTokenID={setTokenID} setName={setName} network={props.network} tokenID={props.tokenID} contractAddress={props.contractAddress}/>
       <div className="image-text" >Token ID: #{`${tokenID}`}</div>
       <div className="image-text" >{name}</div>
-      <div className={`overlay hovered`} style={{marginTop: '-20px',textAlign: 'right', paddingRight: '20px'}}>
-        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{props.callToAction=='Mint' && `${supply}/${maxSupply}`}</span>
+      <div className={`overlay hovered`} style={{marginTop: '-20px',textAlign: 'right', paddingRight: props.callToAction=='Purchase Instant' ? '0px':'20px'}}>
+        {props.callToAction=='Purchase Instant' && <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{Number(props.pricePerToken)/Number(10**Number(decimals))} {paymentTokenName}</span>}
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{props.callToAction=='Mint Instant' && `${supply}/${maxSupply}`}</span>
       </div>
       <div className="offer-text" style={{display: isHovered ? '': 'none'}} onClick={async () => {
-        // toggleModal(true);
-        setInProgress(true)
-        await props.onClick()
-
-        setInProgress(false)
-        // acceptRequest();
-
-        // setTimeout(() => {
-        // toggleModal(false);
-
-          // (document.getElementsByClassName('_5b32m91 _5b32m90 fyvr11jg fyvr11ko fyvr11h0 fyvr11hs fyvr11nk fyvr1ko fyvr1oo fyvr1qo fyvr1mo')[1]! as any).style!.zIndex = -10;
-        //   (document.getElementsByClassName('_5b32m91 _5b32m90 fyvr11jg fyvr11ko fyvr11h0 fyvr11hs fyvr11nk fyvr1ko fyvr1oo fyvr1qo fyvr1mo')[0]! as any).style!.zIndex = 1;
-        //   (document.getElementsByClassName('_5b32m95 _5b32m94 fyvr11d8 fyvr11dw fyvr11bg fyvr11by fyvr11c4 fyvr11cm fyvr11ls fyvr11m8 fyvr12ws fyvr12wm fyvr11h0 fyvr11i4 fyvr11hs fyvr11sd fyvr1mo fyvr1om _5b32m97')[0]! as any).style!.zIndex = 2000;
-        //   // (document.getElementsByClassName('_5b32m91 _5b32m90 fyvr11jg fyvr11ko fyvr11h0 fyvr11hs fyvr11nk fyvr1ko fyvr1oo fyvr1qo fyvr1mo')[0]! as any).remove()
-        //   (document.getElementById('radix-:rd:') as any).style.zIndex = -1
-        // }, 1000)
-
-        }}>{!inProgress ? props.callToAction : "Loading..."}</div>
+        if(!inProgress&&!insufficentPayment && props.callToAction != 'Server Error'){
+          setInProgress(true)
+          await props.onClick()
+          setInProgress(false)
+        }
+      }}>
+          {
+            !inProgress 
+          ? 
+              insufficentPayment
+            ?
+              'Insufficient Payment Balance'
+            :
+              props.callToAction 
+          : 
+            "Loading..."}
+          </div>
     </div>
   );
 };

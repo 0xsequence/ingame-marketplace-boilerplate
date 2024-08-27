@@ -7,9 +7,9 @@ const Tests = (props: { chainId: number }) => {
   const { chainId } = props;
   return (
     <Box display="flex" flexDirection="column" gap="4">
-      <TestSignMessage />
-      <TestVerifyMessage chainId={chainId} />
-      <TestSendTransaction />
+      {/* <TestSignMessage /> */}
+      {/* <TestVerifyMessage chainId={chainId} /> */}
+      {/* <TestSendTransaction /> */}
     </Box>
   );
 };

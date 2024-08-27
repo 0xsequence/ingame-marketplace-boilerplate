@@ -1,6 +1,7 @@
-import { getDefaultChains, getDefaultConnectors } from '@0xsequence/kit'
+import { getDefaultChains, getDefaultWaasConnectors } from '@0xsequence/kit'
 import { createConfig, http } from 'wagmi'
- 
+
+import '@0xsequence/design-system/styles.css'
 export const projectAccessKey = 'AQAAAAAAAEGvyZiWA9FMslYeG_yayXaHnSI'
  
 const chains = getDefaultChains() // optionally, supply an array of chain ID's getDefaultChains([1,137])
@@ -14,13 +15,13 @@ const googleClientId = '970987756660-35a6tc48hvi8cev9cnknp0iugv9poa23.apps.googl
 const appleClientId = 'com.horizon.sequence.waas'
 const appleRedirectURI =  'https://' + window.location.origin + window.location.pathname
  
-const connectors = getDefaultConnectors({
+const connectors = getDefaultWaasConnectors({
   walletConnectProjectId: "c65a6cb1aa83c4e24500130f23a437d8",
-  defaultChainId: 1,
+  defaultChainId: 42161,
   appName: 'demo app',
   projectAccessKey,
-//   waasConfigKey
-//   googleClientId,
+  waasConfigKey,
+  googleClientId,
 //   appleClientId,
 //   appleRedirectURI,
 })

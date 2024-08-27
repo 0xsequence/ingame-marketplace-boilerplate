@@ -5,17 +5,16 @@ import NotConnected from "./components/blockchain/NotConnected";
 import { Modal, Box, Button, Text, TextInput, Tabs } from "@0xsequence/design-system";
 import Connected from "./components/blockchain/Connected";
 import MarketplaceWidget from './components/MarketplaceWidget'
-// import {CollectibleTradeActions} from './components/ModalOrderCreaction'
-const Home = () => {
-  const { isConnected } = useAccount();
-  const [isOpen, toggleModal] = useState(false);
-  const [view, setView] = useState(0)
 
+const Home = () => {
+  const [isOpen, toggleModal] = useState<boolean>(false);
+
+  const { isConnected } = useAccount();
 
   useEffect(() => {
-
-  }, [view])
-
+    console.log(isOpen)
+    console.log('isOpen')
+  }, [isOpen])
 
   return (
     <div>
@@ -24,15 +23,19 @@ const Home = () => {
       {isConnected ? <Connected /> : <NotConnected />}
       <br/>
       <br/>
-      {/* <CollectibleTradeActions
-            chainId={1}
-            collectionAddress={'0x4279aa50a32b8c892206f4ef1a25befb6fd33922'}
-            tokenId={'0'}
-          /> */}
-          <MarketplaceWidget 
+      <Button onClick={() => toggleModal(true)} label='Open Marketplace'/>
+      {isConnected &&
+          <MarketplaceWidget
+          hasMint={true}
+          isOpen={isOpen}
+          toggleModal={toggleModal}
+          tokenIDs={['0','1','2','3','4','5']}
           paymentToken={'0xaf88d065e77c8cC2239327C5EDb3A432268e5831'}
           contractAddress={'0xfeeb59a14b6670c4d8f3f314303702d46eb5957f'}
-          network={'arbitrum'}/>
+          network={'arbitrum'}
+          minterURL={'https://p2p-marketplace-widget.tpin.workers.dev/'}
+          />
+      }
       <footer className="homepage__footer">
         <Text>
           Want to learn more? Read the{" "}

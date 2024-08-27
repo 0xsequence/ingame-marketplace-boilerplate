@@ -1,6 +1,6 @@
 import Home from "./views/Home";
 import { KitProvider } from "@0xsequence/kit";
-import { getDefaultWaasConnectors } from "@0xsequence/kit-connectors";
+// import { getDefaultWaasConnectors } from "@0xsequence/kit-connectors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import chains from "./utils/chains";
@@ -15,44 +15,44 @@ const App = () => {
   const appleRedirectURI = window.location.origin + window.location.pathname;
   const walletConnectId = import.meta.env.VITE_WALLET_CONNECT_ID;
 
-  const connectors = getDefaultWaasConnectors({
-    walletConnectProjectId: walletConnectId,
-    waasConfigKey,
-    googleClientId,
-    // Notice: Apple Login only works if deployed on https (to support Apple redirects)
-    appleClientId,
-    appleRedirectURI,
-    /* Arbitrum sepolia chainId */
-    defaultChainId: 421614,
-    appName: "Kit Starter",
-    projectAccessKey,
-  });
+  // const connectors = getDefaultWaasConnectors({
+  //   walletConnectProjectId: walletConnectId,
+  //   waasConfigKey,
+  //   googleClientId,
+  //   // Notice: Apple Login only works if deployed on https (to support Apple redirects)
+  //   appleClientId,
+  //   appleRedirectURI,
+  //   /* Arbitrum sepolia chainId */
+  //   defaultChainId: 421614,
+  //   appName: "Kit Starter",
+  //   projectAccessKey,
+  // });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const transports: { [key: number]: any } = {};
+  // const transports: { [key: number]: any } = {};
 
-  chains.forEach((chain) => {
-    transports[chain.id] = http();
-  });
+  // chains.forEach((chain) => {
+  //   transports[chain.id] = http();
+  // });
 
-  const config = createConfig({
-    transports,
-    connectors,
-    chains,
-  });
+  // const config = createConfig({
+  //   transports,
+  //   connectors,
+  //   chains,
+  // });
 
-  const kitConfig = {
-    projectAccessKey,
-  };
+  // const kitConfig = {
+  //   projectAccessKey,
+  // };
 
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <KitProvider config={kitConfig}>
+    // <WagmiProvider config={config}>
+      // <QueryClientProvider client={queryClient}>
+        // <KitProvider config={kitConfig}>
           <Home />
-        </KitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+        // </KitProvider>
+      // </QueryClientProvider>
+    // </WagmiProvider>
   );
 };
 
