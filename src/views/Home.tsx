@@ -4,7 +4,7 @@ import "./Home.css";
 import NotConnected from "./components/blockchain/NotConnected";
 import {Button, Text} from "@0xsequence/design-system";
 import Connected from "./components/blockchain/Connected";
-import MarketplaceWidget from './components/MarketplaceWidget'
+import MarketplaceOverlay from './components/MarketplaceOverlay'
 import { useTheme } from "@0xsequence/design-system";
 
 const Home = () => {
@@ -19,14 +19,14 @@ const Home = () => {
 
   return (
     <div>
-      <h1>Sequence Marketplace Widget Boilerplate</h1>
+      <h1>Sequence Marketplace Overlay Boilerplate</h1>
       <h2 className="homepage__marginBtNormal">Embedded Wallet</h2>
       {isConnected ? <Connected /> : <NotConnected />}
       <br/>
       <br/>
       <Button onClick={() => toggleModal(true)} label='Open Marketplace'/>
       {isConnected &&
-          <MarketplaceWidget
+          <MarketplaceOverlay
           // primaryBackgroundColor={'blue'}
           // secondaryCardColor={'red'}
           hasMint={true}
@@ -36,7 +36,7 @@ const Home = () => {
           paymentToken={'0xaf88d065e77c8cC2239327C5EDb3A432268e5831'}
           contractAddress={'0xfeeb59a14b6670c4d8f3f314303702d46eb5957f'}
           network={'arbitrum'}
-          minterURL={'https://p2p-marketplace-widget.tpin.workers.dev/'}
+          minterURL={'https://p2p-marketplace-overlay.tpin.workers.dev/'}
           />
       }
       <footer className="homepage__footer">

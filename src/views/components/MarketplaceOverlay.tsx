@@ -20,7 +20,7 @@ const styles = {
   }
 }
 
-const validateMarketplaceWidgetProps = (props: any) => {
+const validateMarketplaceOverlayProps = (props: any) => {
   const {
       hasMint,
       isOpen,
@@ -146,8 +146,8 @@ const tokenNamesByNetwork: any = {
 
 let interval: any;
 
-const MarketplaceWidget = (props: any) => {
-  validateMarketplaceWidgetProps(props);
+const MarketplaceOverlay = (props: any) => {
+  validateMarketplaceOverlayProps(props);
   const {address} = useAccount()
   const [isOpen, toggleModal] = useState(props.isOpen);
   const {theme} = useTheme()
@@ -901,4 +901,4 @@ const MarketplaceWidget = (props: any) => {
   )
 }
 
-export default MarketplaceWidget
+export default MarketplaceOverlay
