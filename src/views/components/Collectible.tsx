@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Collectible.css"; // Create this CSS file for styles
 import { SequenceIndexer } from '@0xsequence/indexer'
+import { useTheme } from "@0xsequence/design-system";
 
 const ImageWindow = (props: any) => {
   const [urlImage, setUrlImage] = useState<string | null>(null);
@@ -42,6 +43,7 @@ const ImageWindow = (props: any) => {
 };
 
 const ImageCard = (props: any) => {
+  const {theme} = useTheme()
   const [isHovered, setIsHovered] = useState(false);
   const [isOpen, _] = useState(false);
   const [inProgress, setInProgress] = useState(false)
@@ -91,7 +93,7 @@ const ImageCard = (props: any) => {
   }, [inProgress, tokenID])
 
   const getUserBalance = async () => {
-    const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, 'AQAAAAAAAF_JvPALhBthL7VGn6jV0YDqaFY')
+    const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, import.meta.env.VITE_PROJECT_ACCESS_KEY!)
   
       // try any contract and account address you'd like :)
       const contractAddress = props.paymentToken
@@ -129,11 +131,11 @@ const ImageCard = (props: any) => {
       onMouseLeave={() => setIsHovered(false)}
     >
         <ImageWindow setTokenID={setTokenID} setName={setName} network={props.network} tokenID={props.tokenID} contractAddress={props.contractAddress}/>
-      <div className="image-text" >Token ID: #{`${tokenID}`}</div>
-      <div className="image-text" >{name}</div>
+      <div className="image-text" style={{color: theme == 'light' ? 'black' : 'white'}} >Token ID: #{`${tokenID}`}</div>
+      <div className="image-text" style={{color: theme == 'light' ? 'black' : 'white'}} >{name}</div>
       <div className={`overlay hovered`} style={{marginTop: '-20px',textAlign: 'right', paddingRight: props.callToAction=='Purchase Instant' ? '0px':'20px'}}>
-        {props.callToAction=='Purchase Instant' && <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{Number(props.pricePerToken)/Number(10**Number(decimals))} {paymentTokenName}</span>}
-        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{props.callToAction=='Mint Instant' && `${supply}/${maxSupply}`}</span>
+        {props.callToAction=='Purchase Instant' && <span style={{color: theme == 'light' ? 'black' : 'white'}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{Number(props.pricePerToken)/Number(10**Number(decimals))} {paymentTokenName}</span>}
+        <span style={{color: theme == 'light' ? 'black' : 'white'}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{props.callToAction=='Mint Instant' && `${supply}/${maxSupply}`}</span>
       </div>
       <div className="offer-text" style={{display: isHovered ? '': 'none'}} onClick={async () => {
         if(!inProgress&&!insufficentPayment && props.callToAction != 'Server Error'){

@@ -5,13 +5,16 @@ import NotConnected from "./components/blockchain/NotConnected";
 import {Button, Text} from "@0xsequence/design-system";
 import Connected from "./components/blockchain/Connected";
 import MarketplaceWidget from './components/MarketplaceWidget'
+import { useTheme } from "@0xsequence/design-system";
 
 const Home = () => {
   const [isOpen, toggleModal] = useState<boolean>(false);
 
   const { isConnected } = useAccount();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
+    setTheme('dark')
   }, [isOpen])
 
   return (
@@ -24,6 +27,8 @@ const Home = () => {
       <Button onClick={() => toggleModal(true)} label='Open Marketplace'/>
       {isConnected &&
           <MarketplaceWidget
+          // primaryBackgroundColor={'blue'}
+          // secondaryCardColor={'red'}
           hasMint={true}
           isOpen={isOpen}
           toggleModal={toggleModal}

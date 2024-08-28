@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import { Modal, Box, Button, TextInput, Tabs, Card } from "@0xsequence/design-system";
+import { Modal, Box, Button, TextInput, Tabs, Card, useTheme } from "@0xsequence/design-system";
 import Collectible from "./Collectible";
 import { AnimatePresence } from "framer-motion";
 import { useAccount, useSendTransaction } from 'wagmi';
@@ -154,6 +154,7 @@ const MarketplaceWidget = (props: any) => {
   validateMarketplaceWidgetProps(props);
   const {address} = useAccount()
   const [isOpen, toggleModal] = useState(props.isOpen);
+  const {theme} = useTheme()
   const [view, setView] = useState(0)
   const [count, setCount] = useState(0)
   const { triggerAddFunds: toggleAddFunds } = useAddFundsModal()
@@ -173,6 +174,7 @@ const MarketplaceWidget = (props: any) => {
   const [paymentTokenDecimal,setPaymentTokenDecimal] = useState(0)
 
   useEffect(() => {
+    console.log(theme)
     if (txnData) {
       console.log(txnData)
     }
@@ -209,18 +211,18 @@ const MarketplaceWidget = (props: any) => {
     } else {
       console.log('retrying')
       // Retry after a short delay if appRoot isn't found yet
-      setTimeout(observeAppRoot, 100);
+      setTimeout(observeAppRoot, 0);
     }
 
     if (appRoot) {
       // @ts-ignore
-      (document.getElementsByClassName('fyvr11sd _1vqx0w91 _1vqx0w90 fyvr128 fyvr15o _1vqx0w92')[0]as any).style!.overflow! = 'hidden'
+      (document.getElementsByClassName('fyvr11sd _1vqx0w91 _1vqx0w90 fyvr128 fyvr15o _1vqx0w92')[0]as any).style!.overflow! = 'hidden';
       (document.getElementsByClassName('fyvr1u4 fyvr1w0 fyvr1xw fyvr1zs fyvr11i4 fyvr11jw fyvr15o fyvr11h0')[0]as any).style!.padding! = '35px'
 
     } else {
       console.log('retrying')
       // Retry after a short delay if appRoot isn't found yet
-      setTimeout(observeAppRoot, 100);
+      setTimeout(observeAppRoot, 0);
     }
   };
 
@@ -228,7 +230,17 @@ const MarketplaceWidget = (props: any) => {
     const appRoot = document.getElementsByClassName('fyvr11sd _1vqx0w91 _1vqx0w90 fyvr128 fyvr15o _1vqx0w92')[0]
 
     if (appRoot) {
-      (document.getElementsByClassName('fyvr11sd _1vqx0w91 _1vqx0w90 fyvr128 fyvr15o _1vqx0w92')[0]as any).style!.overflow! = 'hidden'
+      // @ts-ignore
+      (appRoot as HTMLElement).style.overflow = 'hidden';
+      // (document.getElementsByClassName('fyvr11sd _1vqx0w91 _1vqx0w90 fyvr128 fyvr15o _1vqx0w92')[0] as any).style.background = 'blue';
+      const element = document.getElementsByClassName('fyvr1u4 fyvr1w0 fyvr1xw fyvr1zs fyvr11i4 fyvr11jw fyvr15o fyvr11h0')[0] as HTMLElement;
+
+      if (element) {
+        element.style.padding = '35px';
+        element.style.margin = '30px';
+      }
+
+      (appRoot as HTMLElement).style.background = props.primaryBackgroundColor;
 
     } else {
       console.log('retrying')
@@ -236,6 +248,21 @@ const MarketplaceWidget = (props: any) => {
       setTimeout(observeAppRoot2, 100);
     }
   }
+
+  const observeCardChange = () => {
+    const root = document.documentElement;
+  
+    if (props.secondaryCardColor) {
+      // Update the CSS variable for the entire document
+      root.style.setProperty('--secondary-card-color', props.secondaryCardColor);
+      console.log('CSS variable updated');
+    } else {
+      root.style.setProperty('--secondary-card-color', theme == 'light'?'white':'#1a1a1a');
+
+      // Retry after a short delay if props aren't available yet
+      setTimeout(observeCardChange, 0);
+    }
+  };
   const onClick = () => {
     (document.getElementsByClassName('_5b32m91 _5b32m90 fyvr11jg fyvr11ko fyvr11h0 fyvr11hs fyvr11nk fyvr1ko fyvr1oo fyvr1qo fyvr1mo')[0] as any).style!.zIndex = 0;
 
@@ -309,7 +336,7 @@ const MarketplaceWidget = (props: any) => {
     }
 
     const getNativeBalance = async () => {
-      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, 'AQAAAAAAAF_JvPALhBthL7VGn6jV0YDqaFY')
+      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, import.meta.env.VITE_PROJECT_ACCESS_KEY!)
   
       // try any contract and account address you'd like :)
       const accountAddress = address
@@ -324,7 +351,7 @@ const MarketplaceWidget = (props: any) => {
     }
 
     const getERC20Balance = async () => {
-      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, 'AQAAAAAAAF_JvPALhBthL7VGn6jV0YDqaFY')
+      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, import.meta.env.VITE_PROJECT_ACCESS_KEY!)
   
       // try any contract and account address you'd like :)
       const contractAddress = props.paymentToken
@@ -510,32 +537,46 @@ const MarketplaceWidget = (props: any) => {
     }, [view])
 
     const getUserBalance = async () => {
-      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, 'AQAAAAAAAF_JvPALhBthL7VGn6jV0YDqaFY')
-  
-      // try any contract and account address you'd like :)
-      const contractAddress = props.contractAddress
-      const accountAddress = address
-      
-      // query Sequence Indexer for all nft balances of the account on Polygon
-      const nftBalances = await indexer.getTokenBalances({
-        contractAddress: contractAddress,
-        accountAddress: accountAddress,
-        includeMetadata: true
-      })
-      
-      let tempUserOwnerBalances: any = []
-      nftBalances.balances.map((balance) => {
-        if(balance.contractAddress.toLowerCase() == contractAddress.toLowerCase()){
-          tempUserOwnerBalances.push(
-            <Collectible tokenID={balance.tokenID} network={props.network} contractAddress={props.contractAddress} callToAction={'Sell'} onClick={() => onCreateRequest(balance.tokenID as any)}/>
-          )
-        }
-      })
-
-      setUserOwnedItems(tempUserOwnerBalances)
-    }
+      try {
+        const indexer = new SequenceIndexer(
+          `https://${props.network}-indexer.sequence.app`, 
+          import.meta.env.VITE_PROJECT_ACCESS_KEY!
+        );
+    
+        const contractAddress = props.contractAddress;
+        const accountAddress = address;
+    
+        // Query Sequence Indexer for all NFT balances of the account on Polygon
+        const nftBalances = await indexer.getTokenBalances({
+          contractAddress: contractAddress,
+          accountAddress: accountAddress,
+          includeMetadata: true
+        });
+    
+        let tempUserOwnerBalances: any = [];
+        nftBalances.balances.map((balance) => {
+          if (balance.contractAddress.toLowerCase() === contractAddress.toLowerCase()) {
+            tempUserOwnerBalances.push(
+              <Collectible 
+                tokenID={balance.tokenID} 
+                network={props.network} 
+                contractAddress={props.contractAddress} 
+                callToAction={'Sell'} 
+                onClick={() => onCreateRequest(balance.tokenID as any)}
+              />
+            );
+          }
+        });
+    
+        setUserOwnedItems(tempUserOwnerBalances);
+      } catch (error) {
+        console.error("Error fetching user balance:", error);
+        setTimeout(getUserBalance, 1000); // Retry after 1000 ms
+      }
+    };
+    
     const getUserBalanceForOrder = async () => {
-      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, 'AQAAAAAAAF_JvPALhBthL7VGn6jV0YDqaFY')
+      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, import.meta.env.VITE_PROJECT_ACCESS_KEY!)
   
       // try any contract and account address you'd like :)
       const contractAddress = props.contractAddress
@@ -561,7 +602,7 @@ const MarketplaceWidget = (props: any) => {
     }
 
     const getUserPriceBalanceForOrder = async () => {
-      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, 'AQAAAAAAAF_JvPALhBthL7VGn6jV0YDqaFY')
+      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, import.meta.env.VITE_PROJECT_ACCESS_KEY!)
   
       // try any contract and account address you'd like :)
       const contractAddress = props.paymentToken
@@ -632,10 +673,14 @@ const MarketplaceWidget = (props: any) => {
     };
 
     useEffect(() => {
-      if(view){
+      if((view || view == 0)
+        &&props.isOpen
+      ){
         observeAppRoot2()
-      }
-    },[])
+        observeCardChange()
+
+      } 
+    },[view, props.isOpen])
 
     useEffect(() => {
 
@@ -678,6 +723,22 @@ const MarketplaceWidget = (props: any) => {
       }
     }, [])
 
+    useEffect(() => {
+      // (document.getElementsByClassName('fyvr11sd _1vqx0w91 _1vqx0w90 fyvr128 fyvr15o _1vqx0w92')[0] as any).style.background = 'blue'
+    }, [])
+
+    useEffect(() => {
+      if(theme == 'light' && (view || view == 0)){
+        const texts = document.getElementsByTagName('h2')
+
+        for(let i = 0; i < texts.length; i++){
+          texts[i].style.color = 'black'
+        }
+
+      }
+      console.log(view)
+    }, [theme, view])
+
     return(
       <>      
         <AnimatePresence>
@@ -693,6 +754,9 @@ const MarketplaceWidget = (props: any) => {
                 <Tabs
                     style={{outline: 'none', overflow: 'hidden'}}
                     onClick={(evt: any) => {
+                      
+                      observeAppRoot2()
+                      observeCardChange()
                       const parser = new DOMParser();
                       const doc = parser.parseFromString(evt.target.innerHTML, 'text/html');
                       
@@ -738,7 +802,7 @@ const MarketplaceWidget = (props: any) => {
                                   <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
         
                                   <div style={{display: 'flex', justifyContent: 'center', width: '600px'}}>
-                                  <h2 style={{width: '100%', textAlign: 'center'}}>There are no orders</h2>
+                                  <h2 style={{color: theme == 'light'? 'black' : '', width: '100%', textAlign: 'center'}}>There are no orders</h2>
                                   </div>
                                 </div>
                             ) : (
@@ -755,10 +819,11 @@ const MarketplaceWidget = (props: any) => {
                               view == 3 
                               ? 
                                 <>
-                                  {/* <Button label="Back" onClick={() => setView(0)}></Button> */}
                                   <br/>
                                   <Card>
-                                  Token ID: {inProgressSaleTokenID}, selling for {paymentTokenName}
+                                    <span style={{ padding: '0px', margin: '0px',color: theme == 'light'? 'black' : ''}}>
+                                    Token ID: {inProgressSaleTokenID}, selling for {paymentTokenName}
+                                    </span>
                                   <br/>
                                   <br/>
                                   <TextInput placeholder="price" onChange={(evt: any) => setPrice(evt.target.value)}></TextInput>
@@ -766,7 +831,7 @@ const MarketplaceWidget = (props: any) => {
                                   <TextInput placeholder="quantity" onChange={(evt: any) => setQuantity(evt.target.value)}></TextInput>
                                   <br/>
                                   <div>
-                                    <label>Expiry</label>
+                                    <label style={{ color: theme == 'light'? 'black' : ''}}>Expiry</label>
                                     <input
                                       type="datetime-local"
                                       onChange={(e) => {
@@ -793,7 +858,7 @@ const MarketplaceWidget = (props: any) => {
                                       <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
         
                                         <div style={{display: 'flex', justifyContent: 'center', width: '600px'}}>
-                                        <h2 style={{width: '100%', textAlign: 'center'}}>There are no owned items</h2>
+                                        <h2 style={{color: theme == 'light'? 'black' : '', width: '100%', textAlign: 'center'}}>There are no owned items</h2>
                                         </div>
                                       </div>
                                     ) : (
@@ -811,11 +876,11 @@ const MarketplaceWidget = (props: any) => {
                             <>
                               <br/>
                               <Card>
-                              <p>Address: {`${address}`}</p>
-                              <p>Network: {`${props.network}`}</p>
+                              <p style={{color: theme == 'light'? 'black' : ''}}>Address: {`${address}`}</p>
+                              <p style={{color: theme == 'light'? 'black' : ''}}>Network: {`${props.network}`}</p>
                               <br/>
-                              <p>{tokenName} Balance: {tokenBalance}</p>
-                              <p>{`ETH Balance: ${nativeBalance}`}</p>
+                              <p style={{color: theme == 'light'? 'black' : ''}}>{tokenName} Balance: {tokenBalance}</p>
+                              <p style={{color: theme == 'light'? 'black' : ''}}>{`ETH Balance: ${nativeBalance}`}</p>
                               <br/>
                               <Button variant='primary' label={'Add Funds'} onClick={onClick}></Button>
                               </Card>
@@ -826,7 +891,7 @@ const MarketplaceWidget = (props: any) => {
                                 {mintableCollectibles.length == 0 ? (
                                       <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                         <div style={{display: 'flex', justifyContent: 'center', width: '600px'}}>
-                                        <h2 style={{width: '100%', textAlign: 'center'}}>There are no mintable items</h2>
+                                        <h2 style={{ color: theme == 'light'? 'black' : '', width: '100%', textAlign: 'center'}}>There are no mintable items</h2>
                                         </div>
                                       </div>
                                     ) : (

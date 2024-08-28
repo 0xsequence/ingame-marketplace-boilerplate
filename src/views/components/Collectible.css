@@ -3,10 +3,9 @@
     position: relative;
     width: 280px; /* Adjust size as needed */
     height: 315px; /* Adjust size as needed */
-    border-radius: 20px;
+    border-radius: 25px;
     overflow: hidden;
     background-color: #1a1a1a; /* Dark background */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -89,4 +88,12 @@
   
   button {
     outline: none !important;
+  }
+
+  .image-card {
+    background-color: var(--secondary-card-color, '#1a1a1a');
+  }
+  
+  .image-window {
+    border: 10px solid var(--secondary-card-color, '#1a1a1a');
   }
