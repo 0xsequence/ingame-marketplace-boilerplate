@@ -122,7 +122,7 @@ const ImageCard = (props: any) => {
 
   useEffect(() => {
 
-  }, [maxSupply, insufficentPayment,supply, name, props.onUpdateCount])
+  }, [maxSupply, props.view, insufficentPayment,supply, name, props.onUpdateCount])
 
   return (
     <div
@@ -132,7 +132,9 @@ const ImageCard = (props: any) => {
     >
         <ImageWindow setTokenID={setTokenID} setName={setName} network={props.network} tokenID={props.tokenID} contractAddress={props.contractAddress}/>
       <div className="image-text" style={{color: theme == 'light' ? 'black' : 'white'}} >Token ID: #{`${tokenID}`}</div>
-      <div className="image-text" style={{color: theme == 'light' ? 'black' : 'white'}} >{name}</div>
+      <div className="image-text" style={{ color: theme === 'light' ? 'black' : 'white' }}>
+        {name.length > 25 ? `${name.slice(0, 25)}...` : name}
+      </div>
       <div className={`overlay hovered`} style={{marginTop: '-20px',textAlign: 'right', paddingRight: props.callToAction=='Purchase Instant' ? '0px':'20px'}}>
         {props.callToAction=='Purchase Instant' && <span style={{color: theme == 'light' ? 'black' : 'white'}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{Number(props.pricePerToken)/Number(10**Number(decimals))} {paymentTokenName}</span>}
         <span style={{color: theme == 'light' ? 'black' : 'white'}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{props.callToAction=='Mint Instant' && `${supply}/${maxSupply}`}</span>
@@ -140,7 +142,9 @@ const ImageCard = (props: any) => {
       <div className="offer-text" style={{display: isHovered ? '': 'none'}} onClick={async () => {
         if(!inProgress&&!insufficentPayment && props.callToAction != 'Server Error'){
           setInProgress(true)
-          await props.onClick()
+          console.log()
+          console.log(props.onClick)
+          await props.onClick(props.tokenID)
           setInProgress(false)
         }
       }}>

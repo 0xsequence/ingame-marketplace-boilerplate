@@ -1,8 +1,8 @@
 import {useEffect, useState} from 'react'
-import { Modal, Box, Button, TextInput, Tabs, Card, useTheme } from "@0xsequence/design-system";
+import { Modal, Box, Button, TextInput, Tabs, Card, useTheme, Spinner } from "@0xsequence/design-system";
 import Collectible from "./Collectible";
 import { AnimatePresence } from "framer-motion";
-import { useAccount, useSendTransaction } from 'wagmi';
+import { useAccount, useSendTransaction, useConnect } from 'wagmi';
 import { useAddFundsModal } from '@0xsequence/kit-checkout'
 import { SequenceIndexer } from '@0xsequence/indexer'
 import SequenceMarketABI from '../../abi/ISequenceMarketplace.json'
@@ -79,7 +79,6 @@ const networks = {
   AVALANCHE: 43114,
   AVALANCHE_TESTNET: 43113,
   BASE: 8453,
-  BASE_GOERLI: 84531,
   BASE_SEPOLIA: 84532,
   B3_SEPOLIA: 1993,
   BLAST: 81457,
@@ -87,8 +86,6 @@ const networks = {
   BORNE_TESTNET: 94984,
   BSC: 56,
   BSC_TESTNET: 97,
-  FANTOM: 250,
-  FANTOM_TESTNET: 4002,
   GNOSIS: 100,
   GOERLI: 5,
   HOMEVERSE: 19011,
@@ -147,8 +144,7 @@ const tokenNamesByNetwork: any = {
   [networks.XAI_SEPOLIA]: 'Ether',
 };
 
-// Assuming findSupportedNetwork returns an object with chainId
-
+let interval: any;
 
 const MarketplaceWidget = (props: any) => {
   validateMarketplaceWidgetProps(props);
@@ -160,7 +156,7 @@ const MarketplaceWidget = (props: any) => {
   const { triggerAddFunds: toggleAddFunds } = useAddFundsModal()
   const [tokenBalance, setTokenBalance] = useState(0)
   const [tokenName, setTokenName] = useState('')
-  const [inProgressSaleTokenID, setInProgressSaleTokenID] = useState(0)
+  const [inProgressSaleTokenID, setInProgressSaleTokenID] = useState<any>(null)
   const [paymentTokenName, setPaymentTokenName] = useState('')
   const [pendingFeeOptionConfirmation, confirmPendingFeeOption] = useWaasFeeOptions()
   const [nativeBalance, setNativeBalance] = useState<any>(0)
@@ -169,10 +165,28 @@ const MarketplaceWidget = (props: any) => {
   const [quantity, setQuantity] = useState(0)
   const [hasSufficientToken, setHasSufficientToken] = useState(true)
   const [notEnoughFundsForGas, setNotEnoughFundsForGas] = useState(false)
-  const { data: txnData } = useSendTransaction()
+  const { data: txnData} = useSendTransaction()
+  const [isPending, setIsPending] = useState(false)
   const [userOwnedItems, setUserOwnedItems] = useState([])
   const [paymentTokenDecimal,setPaymentTokenDecimal] = useState(0)
+  const [isSequence, setIsSequence] = useState(false)
+  const { connectors } = useConnect();
 
+  useEffect(() => {
+    setTimeout(async () => {
+      connectors.map(async (connector) => {
+        if (await connector.isAuthorized()) {
+          if (connector.id == "sequence-waas") {
+            setIsSequence(true);
+          }
+        }
+      })
+  },0)
+},[])
+
+  useEffect(() => {
+
+  }, [isSequence, userOwnedItems])
   useEffect(() => {
     console.log(theme)
     if (txnData) {
@@ -206,8 +220,6 @@ const MarketplaceWidget = (props: any) => {
     console.log(appRoot)
     if (appRoot) {
       (document.getElementsByClassName('fyvr11sd fyvr11nk fyvr11hs fyvr128 fyvr11ic fyvr11ko fyvr11jw fyvr11h0')[0]as any).style!.scale! = '0.8'
-
-      // appRoot.style.transform = 'scale(0.8)';
     } else {
       console.log('retrying')
       // Retry after a short delay if appRoot isn't found yet
@@ -220,8 +232,6 @@ const MarketplaceWidget = (props: any) => {
       (document.getElementsByClassName('fyvr1u4 fyvr1w0 fyvr1xw fyvr1zs fyvr11i4 fyvr11jw fyvr15o fyvr11h0')[0]as any).style!.padding! = '35px'
 
     } else {
-      console.log('retrying')
-      // Retry after a short delay if appRoot isn't found yet
       setTimeout(observeAppRoot, 0);
     }
   };
@@ -230,9 +240,7 @@ const MarketplaceWidget = (props: any) => {
     const appRoot = document.getElementsByClassName('fyvr11sd _1vqx0w91 _1vqx0w90 fyvr128 fyvr15o _1vqx0w92')[0]
 
     if (appRoot) {
-      // @ts-ignore
       (appRoot as HTMLElement).style.overflow = 'hidden';
-      // (document.getElementsByClassName('fyvr11sd _1vqx0w91 _1vqx0w90 fyvr128 fyvr15o _1vqx0w92')[0] as any).style.background = 'blue';
       const element = document.getElementsByClassName('fyvr1u4 fyvr1w0 fyvr1xw fyvr1zs fyvr11i4 fyvr11jw fyvr15o fyvr11h0')[0] as HTMLElement;
 
       if (element) {
@@ -253,16 +261,14 @@ const MarketplaceWidget = (props: any) => {
     const root = document.documentElement;
   
     if (props.secondaryCardColor) {
-      // Update the CSS variable for the entire document
       root.style.setProperty('--secondary-card-color', props.secondaryCardColor);
-      console.log('CSS variable updated');
     } else {
       root.style.setProperty('--secondary-card-color', theme == 'light'?'white':'#1a1a1a');
 
-      // Retry after a short delay if props aren't available yet
       setTimeout(observeCardChange, 0);
     }
   };
+
   const onClick = () => {
     (document.getElementsByClassName('_5b32m91 _5b32m90 fyvr11jg fyvr11ko fyvr11h0 fyvr11hs fyvr11nk fyvr1ko fyvr1oo fyvr1qo fyvr1mo')[0] as any).style!.zIndex = 0;
 
@@ -329,7 +335,9 @@ const MarketplaceWidget = (props: any) => {
           gas: null
         });
         // throw new Error()
-        getTopOrders()
+        setTimeout(() => {
+          getTopOrders()
+        }, 1000)
       }catch(err){
         setView(1)
       }
@@ -346,27 +354,21 @@ const MarketplaceWidget = (props: any) => {
         accountAddress: accountAddress,
       })
       
-      console.log('native items', nftBalances)
       setNativeBalance(ethers.utils.formatUnits(nftBalances.balance.balanceWei.toString(), "ether").toString().slice(0,7));
     }
 
     const getERC20Balance = async () => {
       const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, import.meta.env.VITE_PROJECT_ACCESS_KEY!)
   
-      // try any contract and account address you'd like :)
       const contractAddress = props.paymentToken
       const accountAddress = address
-      console.log(address)
-      
-      // query Sequence Indexer for all nft balances of the account on Polygon
+
       const nftBalances = await indexer.getTokenBalances({
         contractAddress: contractAddress,
         accountAddress: accountAddress,
         includeMetadata: true
       })
       
-      console.log('collection of items:', nftBalances)
-
       nftBalances.balances.map((balance) => {
         if(balance.contractAddress.toLowerCase() == contractAddress.toLowerCase()){
           setTokenBalance(Number(balance.balance)/(10**Number(balance.contractInfo?.decimals)))
@@ -389,8 +391,7 @@ const MarketplaceWidget = (props: any) => {
       
       console.log(req)
       const options = {
-        onMessage: (msg: any) => {
-          console.log('msg', msg)
+        onMessage: () => {
           getERC20Balance()
         },
         onError: (err: any) => {
@@ -399,6 +400,7 @@ const MarketplaceWidget = (props: any) => {
       }
       
       console.log(await indexer.subscribeEvents(req, options))
+    
     }
 
     const getPaymentTokenDetails = async () => {
@@ -406,10 +408,8 @@ const MarketplaceWidget = (props: any) => {
       const json = await res.json()
       setPaymentTokenName(json.name)
       setPaymentTokenDecimal(json.decimals)
-      console.log(json)
     }
     useEffect(() => {
-      address && getNativeBalance()
       address && getERC20Balance()
       address && subscribeToBalanceChanges()
       getPaymentTokenDetails()
@@ -420,7 +420,6 @@ const MarketplaceWidget = (props: any) => {
 
     const onCreateRequest = (tokenID: number) => {
       setInProgressSaleTokenID(tokenID)
-      setView(3)
     }
 
     const createSellRequest = async (tokenID: number) => {
@@ -428,7 +427,6 @@ const MarketplaceWidget = (props: any) => {
 
       const provider = new ethers.providers.StaticJsonRpcProvider({
         url: chainConfig.rpcUrl, 
-        // skipFetchSetup: true // Required for ethers.js Cloudflare Worker support
       })
 
       const commonInterface = new ethers.utils.Interface([
@@ -446,7 +444,6 @@ const MarketplaceWidget = (props: any) => {
       const operator = "0xB537a160472183f2150d42EB1c3DD6684A55f74c"; // Replace with the operator address
 
       const isApprovedForAll = await checkApprovalForAll(owner, operator);
-      console.log("Approved for All:", isApprovedForAll);
 
       const erc1155Interface = new ethers.utils.Interface([
         "function setApprovalForAll(address operator, bool approved) external",
@@ -479,9 +476,8 @@ const MarketplaceWidget = (props: any) => {
         ["0xB537a160472183f2150d42EB1c3DD6684A55f74c", true],
       );
 
-      console.log(data)
-      console.log(dataApprove)
       try {
+        setIsPending(true)
         !isApprovedForAll && console.log(await sendTransaction(config, {
           to: props.contractAddress,
           data: dataApprove as `0x${string}`,
@@ -493,12 +489,14 @@ const MarketplaceWidget = (props: any) => {
           data: data as `0x${string}`,
           gas: null,
         }))
-        // throw new Error()
-        setView(2)
+        setInProgressSaleTokenID(null)
+        getUserBalance()
         setDateTime(null)
+        setIsPending(false)
       }catch(err){
-        console.log(err)
         setNotEnoughFundsForGas(true)
+        setIsPending(false)
+
       }
     }
 
@@ -526,7 +524,7 @@ const MarketplaceWidget = (props: any) => {
         );
         const result = await res.json();
         const orders = result.orders.map((order: any) => {
-          return <Collectible paymentToken={props.paymentToken} address={address} pricePerToken={order.pricePerToken} tokenID={order.tokenId} network={props.network} contractAddress={props.contractAddress} callToAction={'Purchase Instant'} onClick={() => onAcceptOrder(order.orderId, order.pricePerToken)}/>
+          return <Collectible paymentToken={props.paymentToken} address={address} pricePerToken={order.pricePerToken} tokenID={order.tokenId} network={props.network} contractAddress={props.contractAddress} callToAction={isSequence ? 'Purchase Instant' : 'Purchase'} onClick={() => onAcceptOrder(order.orderId, order.pricePerToken)}/>
         })
         setMarketSellOrders(orders)
     }
@@ -535,6 +533,10 @@ const MarketplaceWidget = (props: any) => {
         getTopOrders()
       }
     }, [view])
+
+    useEffect(() => {
+      console.log(view)
+    }, [marketSellOrders, view])
 
     const getUserBalance = async () => {
       try {
@@ -558,11 +560,12 @@ const MarketplaceWidget = (props: any) => {
           if (balance.contractAddress.toLowerCase() === contractAddress.toLowerCase()) {
             tempUserOwnerBalances.push(
               <Collectible 
+                view={view}
                 tokenID={balance.tokenID} 
                 network={props.network} 
                 contractAddress={props.contractAddress} 
                 callToAction={'Sell'} 
-                onClick={() => onCreateRequest(balance.tokenID as any)}
+                onClick={onCreateRequest}
               />
             );
           }
@@ -570,7 +573,6 @@ const MarketplaceWidget = (props: any) => {
     
         setUserOwnedItems(tempUserOwnerBalances);
       } catch (error) {
-        console.error("Error fetching user balance:", error);
         setTimeout(getUserBalance, 1000); // Retry after 1000 ms
       }
     };
@@ -599,28 +601,6 @@ const MarketplaceWidget = (props: any) => {
       })
 
       setUserOwnedItems(tempUserOwnerBalances)
-    }
-
-    const getUserPriceBalanceForOrder = async () => {
-      const indexer = new SequenceIndexer(`https://${props.network}-indexer.sequence.app`, import.meta.env.VITE_PROJECT_ACCESS_KEY!)
-  
-      // try any contract and account address you'd like :)
-      const contractAddress = props.paymentToken
-      const accountAddress = address
-      
-      // query Sequence Indexer for all nft balances of the account on Polygon
-      const nftBalances: any = await indexer.getTokenBalances({
-        contractAddress: contractAddress,
-        accountAddress: accountAddress,
-      })
-      
-      nftBalances.balances.map((balance: any) => {
-        if(balance.contractAddress.toLowerCase() == contractAddress.toLowerCase() && Number(ethers.utils.parseUnits(balance.balance, paymentTokenDecimal).toString()) > Number(price)){
-          // setNotEnoughFundsForGas(true)
-        } else {
-          // setNotEnoughFundsForGas(false)
-        }
-      })
     }
 
     const populateMintableCollectibles = async () => {
@@ -705,10 +685,6 @@ const MarketplaceWidget = (props: any) => {
     }, [quantity])
 
     useEffect(() => {
-      getUserPriceBalanceForOrder()
-    }, [price])
-
-    useEffect(() => {
 
     }, [notEnoughFundsForGas])
 
@@ -724,10 +700,6 @@ const MarketplaceWidget = (props: any) => {
     }, [])
 
     useEffect(() => {
-      // (document.getElementsByClassName('fyvr11sd _1vqx0w91 _1vqx0w90 fyvr128 fyvr15o _1vqx0w92')[0] as any).style.background = 'blue'
-    }, [])
-
-    useEffect(() => {
       if(theme == 'light' && (view || view == 0)){
         const texts = document.getElementsByTagName('h2')
 
@@ -736,8 +708,11 @@ const MarketplaceWidget = (props: any) => {
         }
 
       }
-      console.log(view)
     }, [theme, view])
+
+    useEffect(() => {
+      
+    },[isPending])
 
     return(
       <>      
@@ -759,18 +734,22 @@ const MarketplaceWidget = (props: any) => {
                       observeCardChange()
                       const parser = new DOMParser();
                       const doc = parser.parseFromString(evt.target.innerHTML, 'text/html');
-                      
-                      // Select the element and get its inner content
                       const element: any = doc.querySelector('span.fyvr11mv.fyvr11eg.fyvr11g0.fyvr11fs.fyvr11fc._1qxj1ib9');
-                      
-                      if(element){
-                        const innerContent = element.innerHTML.trim(); 
+                      clearInterval(interval)
+                      if(element||evt.target.innerHTML){
+                        const innerContent = element ? element.innerHTML.trim() : evt.target.innerHTML
                       switch(innerContent){
                         case 'Sell':
                           setView(2)
                           break;
                         case 'Market':
                           setView(0)
+                          break;
+                        case 'On-ramp':
+                          getNativeBalance()
+                          interval = setInterval(() => {
+                            getNativeBalance()
+                          }, 4000)
                           break;
                       }
                     }
@@ -794,7 +773,7 @@ const MarketplaceWidget = (props: any) => {
                                   <Button label="back" onClick={() => setView(0)}></Button>
                                   <br/>
                                   <br/>
-                                  <span style={{color:'blueviolet'}}>Not enough gas to pay for transaction</span>
+                                  <span style={{color:'blueviolet'}}>User closed wallet, or, not enough gas to pay for transaction</span>
                                 </>
                               : 
                                 <div className="scrollable-container">
@@ -816,7 +795,7 @@ const MarketplaceWidget = (props: any) => {
                             :
                               category == 'Sell' 
                             ? 
-                              view == 3 
+                              inProgressSaleTokenID
                               ? 
                                 <>
                                   <br/>
@@ -836,7 +815,7 @@ const MarketplaceWidget = (props: any) => {
                                       type="datetime-local"
                                       onChange={(e) => {
                                         const inputDate = new Date(e.target.value);
-                                        const timestamp = inputDate.getTime(); // This will give you the timestamp in milliseconds
+                                        const timestamp = inputDate.getTime();
                                         setDateTime(timestamp);
                                       }}
                                       // @ts-ignore
@@ -845,7 +824,12 @@ const MarketplaceWidget = (props: any) => {
                                   </div>
                                   <br/>
                                   <div>
-                                    <Button onClick={() => createSellRequest(inProgressSaleTokenID)} disabled={price === 0 || quantity === 0 || !dateTime || !hasSufficientToken} label="Create Sell Order"></Button>
+                                    {
+                                      isPending ?
+                                      <Spinner/>
+                                      :
+                                      <Button onClick={() => createSellRequest(inProgressSaleTokenID)} disabled={price === 0 || quantity === 0 || !dateTime || !hasSufficientToken} label="Create Sell Order"></Button>
+                                    }
                                     {!hasSufficientToken && <span style={{marginLeft:'147px', color:'red'}}>Insufficent collectible tokens</span>}
                                     {notEnoughFundsForGas && <span style={{marginLeft:'147px', color:'blueviolet'}}>Insufficent tokens for gas</span>}
                                   </div>
