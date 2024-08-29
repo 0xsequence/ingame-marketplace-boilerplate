@@ -24,7 +24,7 @@ const Home = () => {
       {isConnected ? <Connected /> : <NotConnected />}
       <br/>
       <br/>
-      <Button onClick={() => toggleModal(true)} label='Open Marketplace'/>
+      {isConnected && <Button onClick={() => toggleModal(true)} label='Open Marketplace'/>}
       {isConnected &&
           <MarketplaceOverlay
           // primaryBackgroundColor={'blue'}
