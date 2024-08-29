@@ -587,6 +587,7 @@ const MarketplaceOverlay = (props: any) => {
           if (balance.contractAddress.toLowerCase() === contractAddress.toLowerCase()) {
             tempUserOwnerBalances.push(
               <Collectible 
+                balance={balance.balance}
                 view={view}
                 tokenID={balance.tokenID} 
                 network={props.network} 

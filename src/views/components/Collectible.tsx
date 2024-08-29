@@ -138,6 +138,7 @@ const ImageCard = (props: any) => {
       <div className={`overlay hovered`} style={{marginTop: '-20px',textAlign: 'right', paddingRight: props.callToAction=='Purchase Instant' ? '0px':'20px'}}>
         {props.callToAction=='Purchase Instant' && <span style={{color: theme == 'light' ? 'black' : 'white'}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{Number(props.pricePerToken)/Number(10**Number(decimals))} {paymentTokenName}</span>}
         <span style={{color: theme == 'light' ? 'black' : 'white'}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{props.callToAction=='Mint Instant' && `${supply}/${maxSupply}`}</span>
+        {props.balance && <span style={{color: theme == 'light' ? 'black' : 'white'}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{props.balance}x</span>}
       </div>
       <div className="offer-text" style={{display: isHovered ? '': 'none'}} onClick={async () => {
         if(!inProgress&&!insufficentPayment && props.callToAction != 'Server Error'){
