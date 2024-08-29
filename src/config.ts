@@ -17,7 +17,7 @@ const googleClientId = '970987756660-35a6tc48hvi8cev9cnknp0iugv9poa23.apps.googl
  
 const connectors = getDefaultWaasConnectors({
   walletConnectProjectId: "c65a6cb1aa83c4e24500130f23a437d8",
-  defaultChainId: 42161,
+  defaultChainId: 137,
   appName: 'p2p marketplace overlay',
   projectAccessKey,
   waasConfigKey,

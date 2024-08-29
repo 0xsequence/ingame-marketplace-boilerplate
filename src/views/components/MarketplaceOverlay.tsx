@@ -122,14 +122,14 @@ const tokenNamesByNetwork: any = {
   [networks.ARBITRUM_GOERLI]: 'Ether',
   [networks.ARBITRUM_NOVA]: 'Ether',
   [networks.ARBITRUM_SEPOLIA]: 'Ether',
-  [networks.AVALANCHE]: 'AVAX',
-  [networks.AVALANCHE_TESTNET]: 'AVAX',
+  [networks.AVALANCHE]: 'Avax',
+  [networks.AVALANCHE_TESTNET]: 'Avax',
   [networks.BASE]: 'Ether',
   [networks.BASE_SEPOLIA]: 'Ether',
   [networks.BSC]: 'BNB',
   [networks.BSC_TESTNET]: 'BNB',
   [networks.GNOSIS]: 'xDAI',
-  [networks.ASTAR_ZKEVM]: 'ASTR',
+  [networks.ASTAR_ZKEVM]: 'Astr',
   [networks.IMMUTABLE_ZKEVM]: 'IMX',
   [networks.IMMUTABLE_ZKEVM_TESTNET]: 'IMX',
   [networks.HOMEVERSE]: 'OAS',
@@ -143,6 +143,22 @@ const tokenNamesByNetwork: any = {
   [networks.XAI]: 'Ether',
   [networks.XAI_SEPOLIA]: 'Ether',
 };
+
+async function getContractBytecode(provider: any, contractAddress: string) {
+  // storage slot consistent location where proxies store the address of the logic contract they delegate to
+    const implementationSlot = "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50";
+    try {
+        const storageValue1 = await provider.getStorageAt(contractAddress, implementationSlot);
+    return storageValue1
+    } catch (error) {
+        console.error("Error fetching bytecode:", error);
+    return null
+    }
+}
+
+const isNotValidERC721ContractAddress = async (provider: any, contractAddress: string) => {
+  return await getContractBytecode(provider, contractAddress) != '0x000000000000000000000000f625720cdd63a65a5b7b31e7d0e64ae1ce08e52c'
+}
 
 let interval: any;
 
@@ -170,6 +186,7 @@ const MarketplaceOverlay = (props: any) => {
   const [userOwnedItems, setUserOwnedItems] = useState([])
   const [paymentTokenDecimal,setPaymentTokenDecimal] = useState(0)
   const [isSequence, setIsSequence] = useState(false)
+  const [nativeTokenName,setNativeTokenName] = useState('')
   const { connectors } = useConnect();
 
   useEffect(() => {
@@ -181,6 +198,12 @@ const MarketplaceOverlay = (props: any) => {
           }
         }
       })
+  },0)
+
+  setTimeout(() => {
+    const networkDetails = findSupportedNetwork(props.network);
+    const nativeToken = tokenNamesByNetwork[networkDetails?.chainId!];
+    setNativeTokenName(nativeToken)
   },0)
 },[])
 
@@ -207,10 +230,14 @@ const MarketplaceOverlay = (props: any) => {
     const nativeToken = tokenNamesByNetwork[networkDetails?.chainId!];
 
     if (pendingFeeOptionConfirmation) {
+      console.log(nativeToken)
 
-      const selected: any = pendingFeeOptionConfirmation?.options?.find(
-        option => option.token.name === nativeToken
-      )
+      const selected: any = pendingFeeOptionConfirmation?.options?.find((option) => {
+        console.log(option)
+        return option.token.symbol === nativeToken
+
+      })
+      console.log(selected)
       confirmPendingFeeOption(pendingFeeOptionConfirmation?.id!, selected.token.contractAddress)
     }
   }, [pendingFeeOptionConfirmation])
@@ -458,7 +485,7 @@ const MarketplaceOverlay = (props: any) => {
       const request = {
         creator: address,
         isListing: true,
-        isERC1155: true,
+        isERC1155: await isNotValidERC721ContractAddress(provider, props.contractAddress),
         tokenContract: props.contractAddress,
         tokenId: tokenID,
         quantity: quantity,
@@ -682,6 +709,7 @@ const MarketplaceOverlay = (props: any) => {
 
     useEffect(() => {
         getUserBalanceForOrder()
+        setNotEnoughFundsForGas(false)
     }, [quantity])
 
     useEffect(() => {
@@ -864,7 +892,7 @@ const MarketplaceOverlay = (props: any) => {
                               <p style={{color: theme == 'light'? 'black' : ''}}>Network: {`${props.network}`}</p>
                               <br/>
                               <p style={{color: theme == 'light'? 'black' : ''}}>{tokenName} Balance: {tokenBalance}</p>
-                              <p style={{color: theme == 'light'? 'black' : ''}}>{`ETH Balance: ${nativeBalance}`}</p>
+                              <p style={{color: theme == 'light'? 'black' : ''}}>{`${nativeTokenName} Balance: ${nativeBalance}`}</p>
                               <br/>
                               <Button variant='primary' label={'Add Funds'} onClick={onClick}></Button>
                               </Card>
