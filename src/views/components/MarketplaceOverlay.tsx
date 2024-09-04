@@ -22,19 +22,13 @@ const styles = {
 
 const validateMarketplaceOverlayProps = (props: any) => {
   const {
-      hasMint,
       isOpen,
       toggleModal,
       tokenIDs,
       paymentToken,
       contractAddress,
-      network,
-      minterURL,
+      network
   } = props;
-
-  if (typeof hasMint !== 'boolean') {
-      console.error("`hasMint` should be a boolean.");
-  }
 
   if (typeof isOpen !== 'boolean') {
       console.error("`isOpen` should be a boolean.");
@@ -58,14 +52,6 @@ const validateMarketplaceOverlayProps = (props: any) => {
 
   if (typeof network !== 'string' || network.trim() === '') {
       console.error("`network` should be a non-empty string.");
-  }
-
-  if (hasMint) {
-      if (typeof minterURL !== 'string' || minterURL.trim() === '') {
-          console.error("`minterURL` is required when `hasMint` is true and should be a non-empty string.");
-      }
-  } else {
-      console.warn("`minterURL` is not required because `hasMint` is set to false.");
   }
 };
 
@@ -176,7 +162,6 @@ const MarketplaceOverlay = (props: any) => {
   const [paymentTokenName, setPaymentTokenName] = useState('')
   const [pendingFeeOptionConfirmation, confirmPendingFeeOption] = useWaasFeeOptions()
   const [nativeBalance, setNativeBalance] = useState<any>(0)
-  const [dateTime, setDateTime] = useState<any>('');
   const [price, setPrice] = useState(0)
   const [quantity, setQuantity] = useState(0)
   const [hasSufficientToken, setHasSufficientToken] = useState(true)
@@ -232,12 +217,11 @@ const MarketplaceOverlay = (props: any) => {
     if (pendingFeeOptionConfirmation) {
       console.log(nativeToken)
 
+      console.log(pendingFeeOptionConfirmation)
       const selected: any = pendingFeeOptionConfirmation?.options?.find((option) => {
-        console.log(option)
-        return option.token.symbol === nativeToken
+        return option.token.name === nativeToken
 
       })
-      console.log(selected)
       confirmPendingFeeOption(pendingFeeOptionConfirmation?.id!, selected.token.contractAddress)
     }
   }, [pendingFeeOptionConfirmation])
@@ -306,29 +290,6 @@ const MarketplaceOverlay = (props: any) => {
     observeAppRoot();
   }
 
-  const onMintClick = async (tokenID: number) => {
-    console.log(address)
-      try {
-        const response = await fetch(props.minterURL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ address, tokenID }) // Pass the tokenID in the body
-        });
-    
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-    
-        setCount(count+1)
-      } catch (error) {
-        alert('Cloudflare Worker Error')
-        console.error('Error performing POST request:', error);
-        throw error;
-
-      }
-  }
     const onAcceptOrder = async (orderID: number, price: string) => {
       const sequenceMarketInterface = new ethers.utils.Interface(
         SequenceMarketABI.abi,
@@ -364,7 +325,7 @@ const MarketplaceOverlay = (props: any) => {
         // throw new Error()
         setTimeout(() => {
           getTopOrders()
-        }, 1000)
+        }, 2500)
       }catch(err){
         setView(1)
       }
@@ -489,7 +450,7 @@ const MarketplaceOverlay = (props: any) => {
         tokenContract: props.contractAddress,
         tokenId: tokenID,
         quantity: quantity,
-        expiry: dateTime,
+        expiry: Date.now() + 30 * 24 * 60 * 60 * 1000,
         currency: props.paymentToken,
         pricePerToken: amountBigNumber.toString(),
       };
@@ -518,7 +479,6 @@ const MarketplaceOverlay = (props: any) => {
         }))
         setInProgressSaleTokenID(null)
         getUserBalance()
-        setDateTime(null)
         setIsPending(false)
       }catch(err){
         setNotEnoughFundsForGas(true)
@@ -631,54 +591,7 @@ const MarketplaceOverlay = (props: any) => {
       setUserOwnedItems(tempUserOwnerBalances)
     }
 
-    const populateMintableCollectibles = async () => {
-      try {
-        const collectiblePromises = props.tokenIDs.map(async (tokenID: any) => {
-          try {
-            const res = await fetch(`${props.minterURL}`, {
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            });
     
-            if (res.status === 200) {
-              return (
-                <Collectible
-                  key={tokenID}
-                  minterURL={props.minterURL}
-                  tokenID={tokenID}
-                  network={props.network}
-                  contractAddress={props.contractAddress}
-                  callToAction={'Mint Instant'}
-                  onClick={() => onMintClick(tokenID)}
-                  onUpdateCount={count}
-                />
-              );
-            } else {
-              throw new Error('Non-200 status code');
-            }
-          } catch (err) {
-            return (
-              <Collectible
-                key={tokenID}
-                minterURL={props.minterURL}
-                tokenID={tokenID}
-                network={props.network}
-                contractAddress={props.contractAddress}
-                callToAction={'Server Error'}
-                onClick={() => onMintClick(tokenID)}
-                onUpdateCount={count}
-              />
-            );
-          }
-        });
-    
-        const collectibles = await Promise.all(collectiblePromises);
-        setMintableCollectible(collectibles);
-      } catch (err) {
-        console.error('Error populating collectibles:', err);
-      }
-    };
 
     useEffect(() => {
       if((view || view == 0)
@@ -695,10 +608,6 @@ const MarketplaceOverlay = (props: any) => {
       setTimeout(() => {
         if(view == 3||view == 2){
           getUserBalance()
-        }
-
-        if(view == 0){
-          populateMintableCollectibles()
         }
       }, 0)
       setHasSufficientToken(true)
@@ -838,26 +747,13 @@ const MarketplaceOverlay = (props: any) => {
                                   <br/>
                                   <TextInput placeholder="quantity" onChange={(evt: any) => setQuantity(evt.target.value)}></TextInput>
                                   <br/>
-                                  <div>
-                                    <label style={{ color: theme == 'light'? 'black' : ''}}>Expiry</label>
-                                    <input
-                                      type="datetime-local"
-                                      onChange={(e) => {
-                                        const inputDate = new Date(e.target.value);
-                                        const timestamp = inputDate.getTime();
-                                        setDateTime(timestamp);
-                                      }}
-                                      // @ts-ignore
-                                      style={styles.inputDate}
-                                    />
-                                  </div>
                                   <br/>
                                   <div>
                                     {
                                       isPending ?
                                       <Spinner/>
                                       :
-                                      <Button onClick={() => createSellRequest(inProgressSaleTokenID)} disabled={price === 0 || quantity === 0 || !dateTime || !hasSufficientToken} label="Create Sell Order"></Button>
+                                      <Button onClick={() => createSellRequest(inProgressSaleTokenID)} disabled={price === 0 || quantity === 0 || !hasSufficientToken} label="Create Sell Order"></Button>
                                     }
                                     {!hasSufficientToken && <span style={{marginLeft:'147px', color:'red'}}>Insufficent collectible tokens</span>}
                                     {notEnoughFundsForGas && <span style={{marginLeft:'147px', color:'blueviolet'}}>Insufficent tokens for gas</span>}
@@ -899,21 +795,7 @@ const MarketplaceOverlay = (props: any) => {
                               </Card>
                             </>
                           :
-                            <>
-                              <div className="scrollable-container" >
-                                {mintableCollectibles.length == 0 ? (
-                                      <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                                        <div style={{display: 'flex', justifyContent: 'center', width: '600px'}}>
-                                        <h2 style={{ color: theme == 'light'? 'black' : '', width: '100%', textAlign: 'center'}}>There are no mintable items</h2>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                        <>{mintableCollectibles}</>
-                                    )}
-                                <br/>
-                                <br/>
-                              </div>
-                            </>
+                            null
                           }
                         </>),
                       }
