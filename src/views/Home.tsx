@@ -2,7 +2,7 @@ import { useAccount } from "wagmi";
 import { useState, useEffect } from 'react'
 import "./Home.css";
 import NotConnected from "./components/blockchain/NotConnected";
-import {Button, Text, Box } from "@0xsequence/design-system";
+import {Button, Text } from "@0xsequence/design-system";
 import Connected from "./components/blockchain/Connected";
 import MarketplaceOverlay from './components/MarketplaceOverlay'
 import { useTheme } from "@0xsequence/design-system";

@@ -12,14 +12,6 @@ import {config} from '../../config'
 import { useWaasFeeOptions } from '@0xsequence/kit'
 import { findSupportedNetwork } from '@0xsequence/network'
 
-const styles = {
-  inputDate: {
-    width: '100%',
-    padding: '8px',
-    boxSizing: 'border-box',
-  }
-}
-
 const validateMarketplaceOverlayProps = (props: any) => {
   const {
       isOpen,
@@ -154,7 +146,6 @@ const MarketplaceOverlay = (props: any) => {
   const [isOpen, toggleModal] = useState(props.isOpen);
   const {theme} = useTheme()
   const [view, setView] = useState(0)
-  const [count, setCount] = useState(0)
   const { triggerAddFunds: toggleAddFunds } = useAddFundsModal()
   const [tokenBalance, setTokenBalance] = useState(0)
   const [tokenName, setTokenName] = useState('')
@@ -404,7 +395,7 @@ const MarketplaceOverlay = (props: any) => {
     }, [address])
 
     useEffect(() => {
-    }, [count, inProgressSaleTokenID])
+    }, [inProgressSaleTokenID])
 
     const onCreateRequest = (tokenID: number) => {
       setInProgressSaleTokenID(tokenID)
@@ -488,7 +479,6 @@ const MarketplaceOverlay = (props: any) => {
     }
 
     const [marketSellOrders, setMarketSellOrders] = useState([])
-    const [mintableCollectibles, setMintableCollectible] = useState<any>([])
 
     const getTopOrders = async () => {
         const res = await fetch(
@@ -612,10 +602,6 @@ const MarketplaceOverlay = (props: any) => {
       }, 0)
       setHasSufficientToken(true)
     }, [view])
-
-    useEffect(() => {
-      console.log(mintableCollectibles)
-    },[mintableCollectibles])
 
     useEffect(() => {
         getUserBalanceForOrder()
