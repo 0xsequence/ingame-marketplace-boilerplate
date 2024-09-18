@@ -1,0 +1,99 @@
+.image-card {
+    margin-left: 2.5px;
+    position: relative;
+    width: 280px; /* Adjust size as needed */
+    height: 315px; /* Adjust size as needed */
+    border-radius: 25px;
+    overflow: hidden;
+    background-color: #1a1a1a; /* Dark background */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .image-window {
+    position: relative;
+    width: 280px; /* Adjust size as needed */
+    height: 280px; /* Adjust size as needed */
+    border-radius: 25px; /* Rounded border for the window */
+    overflow: hidden; /* Ensures the image stays within the window */
+    border: 10px solid #1a1a1a;
+  }
+  
+  .image-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Keeps the image within the container */
+  }
+  
+  .image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease; /* Smooth zoom transition */
+  }
+  
+  .image-container:hover .image {
+    transform: scale(1.1); /* Zoom effect */
+  }
+  
+  
+  .image-container:hover .image {
+    transform: scale(1.2); /* Zoom effect */
+  }
+
+  
+  .image-text {
+    color: #ffffff; /* White text for #0 */
+    font-size: 14px;
+    margin-top: 5px;
+    width: 100%;
+    padding-left: 20px;
+    text-align: left;
+  }
+  
+  .overlay {
+    color: transparent;
+    font-size: 14px;
+    margin-top: -10px;
+    transition: color 0.3s ease;
+    font-style: italic;
+    opacity: 0.8;
+    width: 100%;
+    padding-left: 20px;
+    padding-bottom: 20px;
+  }
+  
+  .overlay.hovered {
+    color: #ffffff; /* White text on hover */
+  }
+  
+  .offer-text {
+    width: 100%;
+    padding: 15px 0; /* Vertical padding */
+    font-size: 18px;
+    color: #ffffff;
+    background-color: #333333;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    text-align: center; /* Center the text inside the button */
+  }
+  
+  .offer-text:hover {
+    cursor: pointer;
+    background-color: #33333388; /* Slightly transparent background on hover */
+  }
+  
+  button {
+    outline: none !important;
+  }
+
+  .image-card {
+    background-color: var(--secondary-card-color, '#1a1a1a');
+  }
+  
+  .image-window {
+    border: 10px solid var(--secondary-card-color, '#1a1a1a');
+  }

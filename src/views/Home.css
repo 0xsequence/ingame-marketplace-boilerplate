@@ -20,3 +20,32 @@
 .homepage__marginBtNormal {
   margin-bottom: 1em;
 }
+
+.scrollable-container {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none !important;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns */
+  grid-gap: 5px; /* Adjust spacing between items */
+  height: 400px; /* Set the desired height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  width: 600px;
+  margin: 10px;
+  margin-left: 1px;
+  padding: 0px; /* Optional: Add some padding */
+  box-sizing: border-box; /* Ensure padding is included in the height calculation */
+}
+
+* {
+-webkit-overflow-scrolling: touch;
+scrollbar-width: none; /* For Firefox */
+}
+
+*::-webkit-scrollbar {
+display: none; /* Hide scrollbar for WebKit browsers */
+}
+
+._1vqx0w92 {
+  height: 100%;
+  overflow-y: '' !important;
+}

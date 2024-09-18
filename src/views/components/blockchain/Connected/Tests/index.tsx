@@ -1,15 +1,13 @@
 import { Box } from "@0xsequence/design-system";
-import TestSendTransaction from "./TestSendTransaction";
-import TestSignMessage from "./TestSignMessage";
-import TestVerifyMessage from "./TestVerifyMessage";
 
 const Tests = (props: { chainId: number }) => {
+  // @ts-ignore
   const { chainId } = props;
   return (
     <Box display="flex" flexDirection="column" gap="4">
-      <TestSignMessage />
-      <TestVerifyMessage chainId={chainId} />
-      <TestSendTransaction />
+      {/* <TestSignMessage /> */}
+      {/* <TestVerifyMessage chainId={chainId} /> */}
+      {/* <TestSendTransaction /> */}
     </Box>
   );
 };
